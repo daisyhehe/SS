@@ -2,10 +2,6 @@ $isAdmin = [System.Security.Principal.WindowsPrincipal]::new(
     [System.Security.Principal.WindowsIdentity]::GetCurrent()
 ).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
 
-# ==============================
-# DAISY THEME
-# ==============================
-
 $Pink = "Magenta"
 $LightPink = "DarkMagenta"
 $White = "White"
@@ -16,7 +12,6 @@ $Gray = "Gray"
 
 Clear-Host
 
-# Big DAISY banner
 Write-Host ""
 Write-Host "██████╗  █████╗ ██╗███████╗██╗   ██╗" -ForegroundColor $Pink
 Write-Host "██╔══██╗██╔══██╗██║██╔════╝╚██╗ ██╔╝" -ForegroundColor $Pink
@@ -25,8 +20,7 @@ Write-Host "██║  ██║██╔══██║██║╚════
 Write-Host "██████╔╝██║  ██║██║███████║   ██║   " -ForegroundColor $Pink
 Write-Host "╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝   ╚═╝   " -ForegroundColor $Pink
 Write-Host ""
-
-Write-Host "                 made with love <3" -ForegroundColor $LightPink
+Write-Host "Made as a fork of a script by @praiselily" -ForegroundColour $White
 Write-Host ""
 
 if (-not $isAdmin) {
