@@ -852,8 +852,8 @@ try {
 
 Write-Host ""
 Write-Host "══════════════════════════════════════════════════" -ForegroundColor $Pink
-Write-Host "       CHECK COMPLETE ♡" -ForegroundColor $Pink
+Write-Host "       Finished!" -ForegroundColor $White
+Write-Host "       Thank you to @praiselily for the functionality of the script!!" -ForegroundColor $LightPink
 Write-Host "══════════════════════════════════════════════════" -ForegroundColor $Pink
 Write-Host ""
-Write-Host "Thank you to @praiselily for the functionality of the script!!" -ForegroundColor $LightPink
 Write-Host ""
