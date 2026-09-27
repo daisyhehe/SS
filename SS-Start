@@ -1,1 +1,9 @@
-Write-Host "Im not a thief, sorry Lily"
+Write-Host ""
+Write-Host "██████╗  █████╗ ██╗███████╗██╗   ██╗" -ForegroundColor $Pink
+Write-Host "██╔══██╗██╔══██╗██║██╔════╝╚██╗ ██╔╝" -ForegroundColor $Pink
+Write-Host "██║  ██║███████║██║███████╗ ╚████╔╝ " -ForegroundColor $Pink
+Write-Host "██║  ██║██╔══██║██║╚════██║  ╚██╔╝  " -ForegroundColor $Pink
+Write-Host "██████╔╝██║  ██║██║███████║   ██║   " -ForegroundColor $Pink
+Write-Host "╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝   ╚═╝   " -ForegroundColor $Pink
+Write-Host ""
+Write-Host ""
