@@ -20,7 +20,7 @@ Write-Host "██║  ██║██╔══██║██║╚════
 Write-Host "██████╔╝██║  ██║██║███████║   ██║   " -ForegroundColor $Pink
 Write-Host "╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝   ╚═╝   " -ForegroundColor $Pink
 Write-Host ""
-Write-Host "Made as a fork of a script by @praiselily" -ForegroundColour $White
+Write-Host "Made as a fork of a script by @praiselily"
 Write-Host ""
 
 if (-not $isAdmin) {
