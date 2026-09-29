@@ -78,6 +78,7 @@ $Groups = [ordered]@{
         'https://github.com/Sorted1/StormSS-Fuser-Finder/releases/download/Main/Storm.Fuser.Finder.zip'
         'https://www.mediafire.com/file/lxnu4z9sqzz63lc/MRCv120.exe/file'
         'https://www.mediafire.com/file/qqhbjhop1zgufsa/Exterro_FTK_Imager_%28x64%29-4.7.3.81.exe/file' 
+        'https://github.com/praiselily/Siege/releases/download/Scanner/Siege.exe'
     )
     'Eric Zimmerman' = @(
         'https://download.ericzimmermanstools.com/net9/SrumECmd.zip'
