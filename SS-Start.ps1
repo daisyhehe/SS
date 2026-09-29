@@ -1,12 +1,3 @@
-Write-Host ""
-Write-Host "██████╗  █████╗ ██╗███████╗██╗   ██╗" -ForegroundColor $Pink
-Write-Host "██╔══██╗██╔══██╗██║██╔════╝╚██╗ ██╔╝" -ForegroundColor $Pink
-Write-Host "██║  ██║███████║██║███████╗ ╚████╔╝ " -ForegroundColor $Pink
-Write-Host "██║  ██║██╔══██║██║╚════██║  ╚██╔╝  " -ForegroundColor $Pink
-Write-Host "██████╔╝██║  ██║██║███████║   ██║   " -ForegroundColor $Pink
-Write-Host "╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝   ╚═╝   " -ForegroundColor $Pink
-Write-Host ""
-Write-Host ""
 [CmdletBinding()]
 param()
 
