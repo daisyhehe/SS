@@ -62,8 +62,8 @@ $Groups = [ordered]@{
     )
     'Nirsoft' = @(
         'https://www.nirsoft.net/utils/lastactivityview.zip'
-        'https://www.nirsoft.net/utils/previous_files_recovery.html'
-        'https://www.nirsoft.net/utils/shell_bags_view.html'
+        'http://www.nirsoft.net/utils/previousfilesrecovery-x64.zip'
+        'http://www.nirsoft.net/utils/shellbagsview.zip'
     )
     'Generic Tools' = @(
         'https://github.com/winsiderss/si-builds/releases/download/4.0.26245.218/systeminformer-build-canary-setup.exe'
@@ -76,9 +76,10 @@ $Groups = [ordered]@{
         'https://mh-nexus.de/downloads/HxDPortableSetup.zip'
         'https://github.com/hasherezade/hollows_hunter/releases/download/v0.4.1.1/hollows_hunter64.exe'
         'https://github.com/Sorted1/StormSS-Fuser-Finder/releases/download/Main/Storm.Fuser.Finder.zip'
-        'https://www.mediafire.com/file/lxnu4z9sqzz63lc/MRCv120.exe/file'
-        'https://www.mediafire.com/file/qqhbjhop1zgufsa/Exterro_FTK_Imager_%28x64%29-4.7.3.81.exe/file' 
+        'http://download1523.mediafire.com/lfj2cyzbkkkg7uYC_LxGJj6LZi1wTsD1iqzAlXWfjTBs2DLx7MOfuqG_dFVJBS39VCFbR_8SeV8N6RWnh0-2WNlYLXTI3FAk6EJNLXQt-iTReCQpvznG8xInoA2LXJCsj_xdZ6DSHfPemEZ9yctHbHGQG0a067LswYy8NMPNTOQ/lxnu4z9sqzz63lc/MRCv120.exe'
+        'http://download1531.mediafire.com/zh5m9lkm8r1gjFwJX2NC0hRzwhCN0CjZLuziVavuYLFhUrbYgWJyxPaMIANE4o8fGMzLMGY1SRbonEvvrqk_fQZgPa7E7nXApfQaUc-K6FU8x0ihbDMy9bOJAvqGeJ_LDnKXkL3kcRBWaGUc9u2tP8eVaR_kr16rhipQjAgiNGU/qqhbjhop1zgufsa/Exterro_FTK_Imager_%28x64%29-4.7.3.81.exe' 
         'https://github.com/praiselily/Siege/releases/download/Scanner/Siege.exe'
+        'https://github.com/YasasinTurkiye/FakerDetector/releases/download/v2.12/FakerDetector.exe'
     )
     'Eric Zimmerman' = @(
         'https://download.ericzimmermanstools.com/net9/SrumECmd.zip'
@@ -259,31 +260,41 @@ function Invoke-FileDownload {
 function Show-Banner {
     Clear-Host
 
-    $mr = $White; $mo = $Grey; $mc = $Stars; $r = $Reset
-    Write-Host ""
-    Write-Host "⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    Write-Host "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⠀"
-    Write-Host "⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀"
-    Write-Host "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀"
-    Write-Host " ⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    Write-Host "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀"
-    Write-Host "⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀"
-    Write-Host " ⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"⠀
-    Write-Host "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    Write-Host "⠀⠀ ⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀"
-    Write-Host "⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀"
-     Write-Host ""
-    # STARS wordmark
-    Write-Host "${White}${Grey} ███████╗████████╗ █████╗ ██████╗ ███████╗ ${Reset}"
-    Write-Host "${White}${Grey} ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔════╝ ${Reset}"
-    Write-Host "${White}${Grey} ███████╗   ██║   ███████║██████╔╝███████╗ ${Reset}"
-    Write-Host "${White}${Grey} ╚════██║   ██║   ██╔══██║██╔══██╗╚════██║ ${Reset}"
-    Write-Host "${White}${Grey} ███████║   ██║   ██║  ██║██║  ██║███████║ ${Reset}"
-    Write-Host "${White}${Grey} ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ${Reset}"
-    Write-Host ""
-    Write-Host "${Gray}   Tools Downloader from Speedyxx  •  v1.0${Reset}"
-    Write-Host "${White}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${Reset}"
-    Write-Host ""
+
+$White = "`e[97m"
+$Grey  = "`e[38;2;255;105;180m"   # Hot pink
+$Stars = "`e[38;2;255;182;193m"   # Light pink
+$Reset = "`e[0m"
+
+$mr = $White; $mo = $Grey; $mc = $Stars; $r = $Reset
+
+Write-Host ""
+Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀${Reset}"
+Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⠀${Reset}"
+Write-Host "${Stars}⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀${Reset}"
+Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀${Reset}"
+Write-Host "${Stars} ⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀${Reset}"
+Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀${Reset}"
+Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀${Reset}"
+Write-Host "${Stars} ⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀${Reset}"
+Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀${Reset}"
+Write-Host "${Stars}⠀⠀ ⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀${Reset}"
+Write-Host "${Stars}⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀${Reset}"
+Write-Host ""
+
+# DAISY wordmark
+Write-Host "${White}${Grey} ██████╗  █████╗ ██╗███████╗██╗   ██╗ ${Reset}"
+Write-Host "${White}${Grey} ██╔══██╗██╔══██╗██║██╔════╝╚██╗ ██╔╝ ${Reset}"
+Write-Host "${White}${Grey} ██║  ██║███████║██║███████╗ ╚████╔╝  ${Reset}"
+Write-Host "${White}${Grey} ██║  ██║██╔══██║██║╚════██║  ╚██╔╝   ${Reset}"
+Write-Host "${White}${Grey} ██████╔╝██║  ██║██║███████║   ██║    ${Reset}"
+Write-Host " ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝   ╚═╝    ${Reset}"
+Write-Host ""
+
+Write-Host "${Grey}   Tools Downloader from Daisy  •  v1.0${Reset}"
+Write-Host "${White}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${Reset}"
+Write-Host ""
+
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────────
