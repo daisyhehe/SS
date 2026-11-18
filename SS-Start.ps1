@@ -1,44 +1,19 @@
-[CmdletBinding()]
-param()
+<#
+    Daisy - SS Tools Downloader  v1.1
 
-# ── Privilege check ───────────────────────────────────────────────────────────
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host 'This script requires Administrator privileges.' -ForegroundColor Red
-    Write-Host 'Please re-run from an elevated PowerShell session.' -ForegroundColor Yellow
-    exit 1
-}
+    Run from PowerShell (it asks for admin by itself if needed):
+        irm https://raw.githubusercontent.com/daisyhehe/SS/main/SS-Start.ps1 | iex
 
-$ProgressPreference = 'SilentlyContinue'
+    Works in Windows PowerShell 5.1 and PowerShell 7+.
+    The source is plain ASCII on purpose: special characters are built at runtime,
+    so the banner never turns into garbage because of file encoding.
+#>
 
-# ── Required Assemblies & Connection Optimizations ───────────────────────────
-Add-Type -AssemblyName System.Net.Http -ErrorAction SilentlyContinue
-Add-Type -AssemblyName System.IO.Compression -ErrorAction SilentlyContinue
-Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
+$ScriptUrl = 'https://raw.githubusercontent.com/daisyhehe/SS/main/SS-Start.ps1'
 
-try {
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Tls12, Tls13'
-} catch {
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
-}
-[System.Net.ServicePointManager]::DefaultConnectionLimit = 64
-[System.Net.ServicePointManager]::Expect100Continue = $false
-[System.Net.ServicePointManager]::UseNagleAlgorithm = $false
-
-# ── ANSI palette ──────────────────────────────────────────────────────────────
-$e = [char]27
-
-$White       = "${e}[38;2;245;245;245m"
-$Grey        = "${e}[38;2;190;190;190m"
-$Gray        = "${e}[38;2;125;125;125m"
-$SpeedyWhite = "${e}[38;2;255;255;255m"
-
-$Green       = "${e}[38;2;80;220;80m"
-$Red         = "${e}[91m"
-
-$Reset       = "${e}[0m"
-$Bold        = "${e}[1m"
-
-# ── Tool groups ───────────────────────────────────────────────────────────────
+# -- Tool groups -------------------------------------------------------------
+# Normal URLs are downloaded directly. MediaFire pages and the voidtools
+# download page are resolved to a fresh link at runtime (their direct links expire).
 $Groups = [ordered]@{
     'Orbdiff' = @(
         'https://github.com/Orbdiff/PrefetchView/releases/download/v1.6.8/pv++.exe'
@@ -62,13 +37,13 @@ $Groups = [ordered]@{
     )
     'Nirsoft' = @(
         'https://www.nirsoft.net/utils/lastactivityview.zip'
-        'http://www.nirsoft.net/utils/previousfilesrecovery-x64.zip'
-        'http://www.nirsoft.net/utils/shellbagsview.zip'
+        'https://www.nirsoft.net/utils/previousfilesrecovery-x64.zip'
+        'https://www.nirsoft.net/utils/shellbagsview.zip'
     )
     'Generic Tools' = @(
         'https://github.com/winsiderss/si-builds/releases/download/4.0.26245.218/systeminformer-build-canary-setup.exe'
-        'https://www.voidtools.com/Everything-1.4.1.1029.x64-Setup.exe'
-        'https://github.com/Inkenal/RegistryScanner/releases/download/main/RegistryScanner.exe'
+        'https://www.voidtools.com/downloads/'
+        'https://github.com/Inkenal/RegistryScanner/releases/download/main/VigilsRegistryScanner.exe'
         'https://github.com/Inkenal/TaskParser/releases/download/main/VigilsTaskParser.exe'
         'https://github.com/horsicq/DIE-engine/releases/download/3.10/die_win64_portable_3.10_x64.zip'
         'https://github.com/deathmarine/Luyten/releases/download/v0.5.4_Rebuilt_with_Latest_depenencies/luyten-0.5.4.exe'
@@ -76,384 +51,410 @@ $Groups = [ordered]@{
         'https://mh-nexus.de/downloads/HxDPortableSetup.zip'
         'https://github.com/hasherezade/hollows_hunter/releases/download/v0.4.1.1/hollows_hunter64.exe'
         'https://github.com/Sorted1/StormSS-Fuser-Finder/releases/download/Main/Storm.Fuser.Finder.zip'
-        'http://download1523.mediafire.com/lfj2cyzbkkkg7uYC_LxGJj6LZi1wTsD1iqzAlXWfjTBs2DLx7MOfuqG_dFVJBS39VCFbR_8SeV8N6RWnh0-2WNlYLXTI3FAk6EJNLXQt-iTReCQpvznG8xInoA2LXJCsj_xdZ6DSHfPemEZ9yctHbHGQG0a067LswYy8NMPNTOQ/lxnu4z9sqzz63lc/MRCv120.exe'
-        'http://download1531.mediafire.com/zh5m9lkm8r1gjFwJX2NC0hRzwhCN0CjZLuziVavuYLFhUrbYgWJyxPaMIANE4o8fGMzLMGY1SRbonEvvrqk_fQZgPa7E7nXApfQaUc-K6FU8x0ihbDMy9bOJAvqGeJ_LDnKXkL3kcRBWaGUc9u2tP8eVaR_kr16rhipQjAgiNGU/qqhbjhop1zgufsa/Exterro_FTK_Imager_%28x64%29-4.7.3.81.exe' 
+        'https://www.mediafire.com/file/lxnu4z9sqzz63lc/file'   # MRCv120.exe
+        'https://www.mediafire.com/file/qqhbjhop1zgufsa/file'   # FTK Imager 4.7.3.81
         'https://github.com/praiselily/Siege/releases/download/Scanner/Siege.exe'
         'https://github.com/YasasinTurkiye/FakerDetector/releases/download/v2.12/FakerDetector.exe'
     )
     'Eric Zimmerman' = @(
-        'https://download.ericzimmermanstools.com/net9/SrumECmd.zip'
-        'https://download.ericzimmermanstools.com/net9/MFTECmd.zip'
-        'https://download.ericzimmermanstools.com/net9/TimelineExplorer.zip'
-        'https://download.ericzimmermanstools.com/net9/RegistryExplorer.zip'
+        'https://download.ericzimmermanstools.com/SrumECmd.zip'             # .NET 4.7.2 build, runs out of the box
+        'https://download.ericzimmermanstools.com/MFTECmd.zip'              # .NET 4.7.2 build, runs out of the box
+        'https://download.ericzimmermanstools.com/net/TimelineExplorer.zip' # needs .NET 10 Desktop Runtime
+        'https://download.ericzimmermanstools.com/net/RegistryExplorer.zip' # needs .NET 10 Desktop Runtime
     )
     'Detect' = @(
         'https://detect.ac/tool/ToolsDownloader++'
     )
     'MSC' = @(
         'https://github.com/piespeas/MSC-Event-Viewer/releases/download/BETA/Event.Viewer.MSC.exe'
-
     )
 }
 
+function Start-SSDownloader {
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-function Get-NextSSFolder {
-    $i = 1
-    while (Test-Path "C:\ss$i") { $i++ }
-    return "C:\ss$i"
-}
+    # -- Admin check (relaunches itself elevated) -----------------------------
+    $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+        [Security.Principal.WindowsBuiltInRole]::Administrator)
 
-function Get-FilenameFromUrl {
-    param(
-        [string]$Url,
-        [System.Net.Http.HttpResponseMessage]$Response = $null
-    )
-
-    # 1. Prefer Content-Disposition header if available
-    if ($Response -and $Response.Content.Headers.ContentDisposition -and -not [string]::IsNullOrWhiteSpace($Response.Content.Headers.ContentDisposition.FileName)) {
-        return $Response.Content.Headers.ContentDisposition.FileName.Trim('"')
-    }
-
-    # 2. Check final redirected URI
-    if ($Response -and $Response.RequestMessage -and $Response.RequestMessage.RequestUri) {
-        $finalPath = $Response.RequestMessage.RequestUri.AbsolutePath
-        $finalName = [System.Uri]::UnescapeDataString([System.IO.Path]::GetFileName($finalPath))
-        if (-not [string]::IsNullOrWhiteSpace($finalName) -and [System.IO.Path]::HasExtension($finalName)) {
-            return $finalName
+    if (-not $isAdmin) {
+        Write-Host ''
+        Write-Host '  Administrator rights are required. Asking for elevation...' -ForegroundColor Yellow
+        if ($PSCommandPath) {
+            $argList = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
+        } else {
+            $argList = "-NoProfile -ExecutionPolicy Bypass -Command `"irm '$ScriptUrl' | iex`""
         }
-    }
-
-    # 3. Handle known URLs without file extensions
-    if ($Url -match '/ToolsDownloader\+\+$') {
-        return 'ToolsDownloader++.exe'
-    }
-
-    # 4. Extract from URL path
-    $path = ([System.Uri]$Url).AbsolutePath
-    return [System.Uri]::UnescapeDataString([System.IO.Path]::GetFileName($path))
-}
-
-# ── Fast sequential HTTP client ───────────────────────────────────────────────
-$HttpHandler = [System.Net.Http.HttpClientHandler]::new()
-try {
-    $HttpHandler.AutomaticDecompression = [System.Net.DecompressionMethods]'GZip, Deflate'
-} catch {
-    $HttpHandler.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip
-}
-
-# Reuse the same connection/client across all sequential downloads (HTTP Keep-Alive pool)
-$HttpClient = [System.Net.Http.HttpClient]::new($HttpHandler)
-$HttpClient.Timeout = [TimeSpan]::FromMinutes(10)
-$HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd('Speedyxx-ToolsDownloader/2.0')
-$HttpClient.DefaultRequestHeaders.ConnectionClose = $false
-
-# 256 KB buffer for high-throughput stream writes
-$BufferSize = 262144
-
-function Invoke-FileDownload {
-    param(
-        [string]$Url,
-        [string]$GroupFolder,
-        [System.Collections.Generic.List[string]]$FailedList
-    )
-
-    $targetFile = $null
-    $tempZip    = $null
-
-    $filename = Get-FilenameFromUrl -Url $Url
-    if ([string]::IsNullOrWhiteSpace($filename)) {
-        Write-Host "    ${Red}✗ URL has no downloadable filename: $Url${Reset}"
-        $FailedList.Add($Url)
+        try {
+            Start-Process -FilePath 'powershell.exe' -Verb RunAs -ArgumentList $argList -ErrorAction Stop
+        } catch {
+            Write-Host '  Elevation was cancelled. Run PowerShell as Administrator and try again.' -ForegroundColor Red
+        }
         return
     }
 
-    Write-Host "    ${DkOrange}↓ ${Orange}$filename${Reset} " -NoNewline
+    # -- Console setup --------------------------------------------------------
+    $ProgressPreference = 'SilentlyContinue'
+    try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+    try { $Host.UI.RawUI.WindowTitle = 'Daisy - SS Tools Downloader' } catch {}
+
+    # Windows PowerShell 5.1 in the old console does not always enable ANSI colors.
+    if ($PSVersionTable.PSVersion.Major -lt 7) {
+        try {
+            if (-not ('DaisySS.Console' -as [type])) {
+                Add-Type -Namespace DaisySS -Name Console -ErrorAction Stop -MemberDefinition @'
+[DllImport("kernel32.dll")] public static extern System.IntPtr GetStdHandle(int n);
+[DllImport("kernel32.dll")] public static extern bool GetConsoleMode(System.IntPtr h, out uint m);
+[DllImport("kernel32.dll")] public static extern bool SetConsoleMode(System.IntPtr h, uint m);
+'@
+            }
+            $h = [DaisySS.Console]::GetStdHandle(-11)
+            [uint32]$mode = 0
+            if ([DaisySS.Console]::GetConsoleMode($h, [ref]$mode)) {
+                [void][DaisySS.Console]::SetConsoleMode($h, ($mode -bor 4))   # ENABLE_VIRTUAL_TERMINAL_PROCESSING
+            }
+        } catch {}
+    }
+
+    # -- Colors (no backtick-e, so it also works in PowerShell 5.1) -----------
+    $e      = [char]27
+    $R      = "$e[0m"
+    $B      = "$e[1m"
+    $White  = "$e[38;2;245;245;245m"
+    $Dim    = "$e[38;2;130;130;130m"
+    $Pink   = "$e[38;2;255;105;180m"
+    $Light  = "$e[38;2;255;182;193m"
+    $Green  = "$e[38;2;90;220;120m"
+    $Red    = "$e[38;2;255;90;90m"
+    $Yellow = "$e[38;2;255;210;90m"
+
+    $Line = ([string][char]0x2500) * 64
+
+    # Builds box-drawing glyphs from ASCII placeholders (encoding-proof banner).
+    function ConvertTo-Glyphs([string]$Text) {
+        $map = @{ '#' = 0x2588; '[' = 0x2554; ']' = 0x2557; '{' = 0x255A; '}' = 0x255D; '=' = 0x2550; '|' = 0x2551 }
+        $sb = New-Object System.Text.StringBuilder
+        foreach ($c in $Text.ToCharArray()) {
+            $k = [string]$c
+            if ($map.ContainsKey($k)) { [void]$sb.Append([char]$map[$k]) } else { [void]$sb.Append($c) }
+        }
+        $sb.ToString()
+    }
+
+    function Format-Size([long]$Bytes) {
+        if ($Bytes -ge 1GB) { return '{0:N2} GB' -f ($Bytes / 1GB) }
+        if ($Bytes -ge 1MB) { return '{0:N1} MB' -f ($Bytes / 1MB) }
+        if ($Bytes -ge 1KB) { return '{0:N0} KB' -f ($Bytes / 1KB) }
+        return "$Bytes B"
+    }
+
+    function Show-Banner {
+        Clear-Host
+        $logo = @(
+            ' ######]  #####] ##]#######]##]   ##]'
+            ' ##[==##]##[==##]##|##[====}{##] ##[}'
+            ' ##|  ##|#######|##|#######] {####[} '
+            ' ##|  ##|##[==##|##|{====##|  {##[}  '
+            ' ######[}##|  ##|##|#######|   ##|   '
+            ' {=====} {=}  {=}{=}{======}   {=}   '
+        )
+        $shades = @('255;105;180', '255;120;190', '255;140;200', '255;160;210', '255;175;220', '255;190;228')
+        Write-Host ''
+        Write-Host "   $Light*      .        *         .      *$R"
+        Write-Host ''
+        for ($i = 0; $i -lt $logo.Count; $i++) {
+            Write-Host ("   $e[38;2;$($shades[$i])m" + (ConvertTo-Glyphs $logo[$i]) + $R)
+        }
+        Write-Host ''
+        Write-Host "   $Light.     *        .       *        .$R"
+        Write-Host ''
+        Write-Host "   ${Pink}${B}SS Tools Downloader$R  ${Dim}by Daisy  -  v1.1$R"
+        Write-Host "   $Dim$Line$R"
+        Write-Host ''
+    }
+
+    # -- Assemblies + HTTP client ---------------------------------------------
+    Add-Type -AssemblyName System.Net.Http -ErrorAction SilentlyContinue
+    Add-Type -AssemblyName System.IO.Compression -ErrorAction SilentlyContinue
+    Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
 
     try {
-        # Stream response headers without buffering entire payload into RAM
-        $response = $HttpClient.GetAsync($Url, [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead).GetAwaiter().GetResult()
-        [void]$response.EnsureSuccessStatusCode()
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]'Tls12, Tls13'
+    } catch {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    }
+    [Net.ServicePointManager]::DefaultConnectionLimit = 32
+    [Net.ServicePointManager]::Expect100Continue = $false
 
-        $betterName = Get-FilenameFromUrl -Url $Url -Response $response
-        if (-not [string]::IsNullOrWhiteSpace($betterName)) {
-            $filename = $betterName
+    $handler = New-Object System.Net.Http.HttpClientHandler
+    $handler.AllowAutoRedirect = $true
+    $handler.AutomaticDecompression = [Net.DecompressionMethods]::GZip -bor [Net.DecompressionMethods]::Deflate
+
+    $client = New-Object System.Net.Http.HttpClient($handler)
+    $client.Timeout = [TimeSpan]::FromMinutes(10)
+    # A normal browser user agent: some hosts (MediaFire, NirSoft) refuse unknown clients.
+    [void]$client.DefaultRequestHeaders.TryAddWithoutValidation('User-Agent',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36')
+
+    function Get-PageText([string]$Url) {
+        $client.GetStringAsync($Url).GetAwaiter().GetResult()
+    }
+
+    # Turns pages whose direct links expire into a working download link.
+    function Resolve-DownloadUrl([string]$Url) {
+        if ($Url -match '^https?://(www\.)?mediafire\.com/file/') {
+            $html = Get-PageText $Url
+            $m = [regex]::Match($html, 'href="(https?://download\d*\.mediafire\.com/[^"]+)"')
+            if ($m.Success) { return $m.Groups[1].Value }
+            $m = [regex]::Match($html, 'data-scrambled-url="([^"]+)"')
+            if ($m.Success) {
+                return [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($m.Groups[1].Value))
+            }
+            throw 'MediaFire download link not found (file removed?)'
+        }
+        if ($Url -match '^https?://(www\.)?voidtools\.com/downloads/?$') {
+            try {
+                $m = [regex]::Match((Get-PageText $Url), 'Everything-[\d.]+\.x64-Setup\.exe')
+                if ($m.Success) { return "https://www.voidtools.com/$($m.Value)" }
+            } catch {}
+            return 'https://www.voidtools.com/Everything-1.4.1.1032.x64-Setup.exe'
+        }
+        return $Url
+    }
+
+    function Get-FileNameFor([string]$Url, $Response) {
+        $name = $null
+        $cd = $Response.Content.Headers.ContentDisposition
+        if ($cd) {
+            if ($cd.FileNameStar) { $name = $cd.FileNameStar }
+            elseif ($cd.FileName) { $name = $cd.FileName }
+        }
+        if (-not $name -and $Response.RequestMessage.RequestUri) {
+            $n = [Uri]::UnescapeDataString([IO.Path]::GetFileName($Response.RequestMessage.RequestUri.AbsolutePath))
+            if ([IO.Path]::HasExtension($n)) { $name = $n }
+        }
+        if (-not $name) {
+            $name = [Uri]::UnescapeDataString([IO.Path]::GetFileName(([Uri]$Url).AbsolutePath))
+        }
+        $name = $name.Trim('"', ' ')
+        foreach ($bad in [IO.Path]::GetInvalidFileNameChars()) { $name = $name.Replace([string]$bad, '_') }
+        if (-not $name) { $name = 'download' }
+        if (-not [IO.Path]::HasExtension($name)) { $name += '.exe' }
+        return $name
+    }
+
+    function Get-UniquePath([string]$Folder, [string]$Name) {
+        $base = [IO.Path]::GetFileNameWithoutExtension($Name)
+        $ext  = [IO.Path]::GetExtension($Name)
+        $path = Join-Path $Folder $Name
+        $i = 2
+        while (Test-Path -LiteralPath $path) {
+            $path = Join-Path $Folder ('{0}_{1}{2}' -f $base, $i, $ext)
+            $i++
+        }
+        return $path
+    }
+
+    # Downloads one tool with a live progress line. Returns 'ok', 'warn' or 'fail'.
+    function Invoke-ToolDownload([string]$Url, [string]$Folder, [string]$Prefix) {
+        $response = $null; $in = $null; $out = $null; $dest = $null
+        $nameWidth = 36
+
+        $pad = {
+            param([string]$n)
+            if ($n.Length -gt $nameWidth) { $n.Substring(0, $nameWidth - 3) + '...' } else { $n.PadRight($nameWidth) }
         }
 
-        $isZip = $filename -match '\.zip$'
+        $guess = [Uri]::UnescapeDataString([IO.Path]::GetFileName(([Uri]$Url).AbsolutePath.TrimEnd('/')))
+        if ($Url -match 'mediafire\.com/file/([^/]+)') { $guess = "MediaFire ($($Matches[1]))" }
+        elseif ($Url -match 'voidtools\.com') { $guess = 'Everything (latest)' }
+        Write-Host -NoNewline "`r$Prefix$White$(& $pad $guess)$R  ${Dim}connecting...$R"
 
-        if ($isZip) {
-            $baseName   = [System.IO.Path]::GetFileNameWithoutExtension($filename)
-            $tempZip    = Join-Path $GroupFolder $filename
-            $extractDir = Join-Path $GroupFolder $baseName
+        try {
+            $realUrl = Resolve-DownloadUrl $Url
 
-            # Avoid overwriting another tool with the same filename.
-            $n = 2
-            while ((Test-Path $tempZip) -or (Test-Path $extractDir)) {
-                $tempZip    = Join-Path $GroupFolder ("{0}_{1}.zip" -f $baseName, $n)
-                $extractDir = Join-Path $GroupFolder ("{0}_{1}" -f $baseName, $n)
-                $n++
+            $req = New-Object System.Net.Http.HttpRequestMessage([System.Net.Http.HttpMethod]::Get, $realUrl)
+            $u = [Uri]$realUrl
+            $req.Headers.Referrer = [Uri]("{0}://{1}/" -f $u.Scheme, $u.Host)
+
+            $response = $client.SendAsync($req, [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead).GetAwaiter().GetResult()
+            if (-not $response.IsSuccessStatusCode) {
+                throw "HTTP $([int]$response.StatusCode) $($response.ReasonPhrase)"
             }
+            $ctype = "$($response.Content.Headers.ContentType)"
+            if ($ctype -like 'text/html*') { throw 'Server returned a web page instead of a file' }
 
-            # Direct native stream copy to disk
-            $fileStream = [System.IO.FileStream]::new($tempZip, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None, $BufferSize, [System.IO.FileOptions]::SequentialScan)
-            try {
-                $netStream = $response.Content.ReadAsStreamAsync().GetAwaiter().GetResult()
-                $netStream.CopyTo($fileStream, $BufferSize)
-            } finally {
-                $fileStream.Dispose()
-                if ($netStream) { $netStream.Dispose() }
-                $response.Dispose()
-            }
+            $name  = Get-FileNameFor $realUrl $response
+            $label = "$White$(& $pad $name)$R  "
+            $total = $response.Content.Headers.ContentLength
+            $dest  = Get-UniquePath $Folder $name
 
-            # Fast native CLR zip extraction (orders of magnitude faster than Expand-Archive)
-            try {
-                [System.IO.Compression.ZipFile]::ExtractToDirectory($tempZip, $extractDir)
-                Remove-Item -Path $tempZip -Force -ErrorAction SilentlyContinue
-                Write-Host "${Green}✓${Reset}"
-            } catch {
-                # Fallback to Expand-Archive if ZipFile fails on non-standard entries
-                try {
-                    $null = New-Item -ItemType Directory -Path $extractDir -Force
-                    Expand-Archive -Path $tempZip -DestinationPath $extractDir -Force
-                    Remove-Item -Path $tempZip -Force -ErrorAction SilentlyContinue
-                    Write-Host "${Green}✓${Reset}"
-                } catch {
-                    Write-Host "${Red}✗${Reset}"
-                    $FailedList.Add($Url)
-                    if (Test-Path $tempZip) { Remove-Item -Path $tempZip -Force -ErrorAction SilentlyContinue }
+            $in  = $response.Content.ReadAsStreamAsync().GetAwaiter().GetResult()
+            $out = New-Object IO.FileStream($dest, [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::None, 262144)
+            $buffer = New-Object byte[] 262144
+            [long]$read = 0
+            $sw = [Diagnostics.Stopwatch]::StartNew()
+
+            while (($n = $in.Read($buffer, 0, $buffer.Length)) -gt 0) {
+                $out.Write($buffer, 0, $n)
+                $read += $n
+                if ($sw.ElapsedMilliseconds -ge 150) {
+                    $sw.Restart()
+                    if ($total) { $pct = '{0,3}%' -f [int](($read * 100) / $total) } else { $pct = '   ' }
+                    Write-Host -NoNewline "`r$Prefix$label$Pink$pct$R  $Dim$((Format-Size $read).PadRight(10))$R"
                 }
             }
-        } else {
-            $baseName  = [System.IO.Path]::GetFileNameWithoutExtension($filename)
-            $extension = [System.IO.Path]::GetExtension($filename)
-            $destPath  = Join-Path $GroupFolder $filename
+            $out.Dispose(); $out = $null
+            $in.Dispose();  $in  = $null
 
-            # Avoid overwriting another tool with the same filename.
-            $n = 2
-            while (Test-Path $destPath) {
-                $destPath = Join-Path $GroupFolder ("{0}_{1}{2}" -f $baseName, $n, $extension)
-                $n++
-            }
-            $targetFile = $destPath
+            if ($total -and $read -lt $total) { throw "Download incomplete ($(Format-Size $read) of $(Format-Size $total))" }
 
-            # Direct native stream copy to disk
-            $fileStream = [System.IO.FileStream]::new($destPath, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None, $BufferSize, [System.IO.FileOptions]::SequentialScan)
-            try {
-                $netStream = $response.Content.ReadAsStreamAsync().GetAwaiter().GetResult()
-                $netStream.CopyTo($fileStream, $BufferSize)
-                Write-Host "${Green}✓${Reset}"
-            } finally {
-                $fileStream.Dispose()
-                if ($netStream) { $netStream.Dispose() }
-                $response.Dispose()
+            if ([IO.Path]::GetExtension($dest) -eq '.zip') {
+                $extractDir = Get-UniquePath $Folder ([IO.Path]::GetFileNameWithoutExtension($dest))
+                try {
+                    [IO.Compression.ZipFile]::ExtractToDirectory($dest, $extractDir)
+                    Remove-Item -LiteralPath $dest -Force -ErrorAction SilentlyContinue
+                    Write-Host "`r$Prefix$label${Green}OK  $R  $Dim$((Format-Size $read) + ' (extracted)')$R      "
+                    return 'ok'
+                } catch {
+                    Write-Host "`r$Prefix$label${Yellow}ZIP $R  ${Dim}saved, but could not extract$R      "
+                    return 'warn'
+                }
             }
+
+            Write-Host "`r$Prefix$label${Green}OK  $R  $Dim$((Format-Size $read).PadRight(22))$R"
+            return 'ok'
+        } catch {
+            $msg = $_.Exception.Message
+            if ($_.Exception.InnerException) { $msg = $_.Exception.InnerException.Message }
+            if ($msg.Length -gt 60) { $msg = $msg.Substring(0, 57) + '...' }
+            Write-Host "`r$Prefix$White$(& $pad $guess)$R  ${Red}FAIL$R  $Dim$msg$R"
+            if ($out) { $out.Dispose() }
+            if ($dest -and (Test-Path -LiteralPath $dest)) { Remove-Item -LiteralPath $dest -Force -ErrorAction SilentlyContinue }
+            return 'fail'
+        } finally {
+            if ($in) { $in.Dispose() }
+            if ($response) { $response.Dispose() }
         }
-    } catch {
-        Write-Host "${Red}✗${Reset}"
-        $FailedList.Add($Url)
-        if ($targetFile -and (Test-Path $targetFile)) { Remove-Item -Path $targetFile -Force -ErrorAction SilentlyContinue }
-        if ($tempZip -and (Test-Path $tempZip))       { Remove-Item -Path $tempZip -Force -ErrorAction SilentlyContinue }
     }
-}
 
-function Show-Banner {
-    Clear-Host
-
-
-$White = "`e[97m"
-$Grey  = "`e[38;2;255;105;180m"   # Hot pink
-$Stars = "`e[38;2;255;182;193m"   # Light pink
-$Reset = "`e[0m"
-
-$mr = $White; $mo = $Grey; $mc = $Stars; $r = $Reset
-
-Write-Host ""
-Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀${Reset}"
-Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⠀${Reset}"
-Write-Host "${Stars}⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀${Reset}"
-Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀${Reset}"
-Write-Host "${Stars} ⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀${Reset}"
-Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀${Reset}"
-Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀${Reset}"
-Write-Host "${Stars} ⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀${Reset}"
-Write-Host "${Stars}⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀${Reset}"
-Write-Host "${Stars}⠀⠀ ⠀✦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✧⠀⠀⠀⠀${Reset}"
-Write-Host "${Stars}⠀⠀⠀⠀⋆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀✦⠀⠀${Reset}"
-Write-Host ""
-
-# DAISY wordmark
-Write-Host "${White}${Grey} ██████╗  █████╗ ██╗███████╗██╗   ██╗ ${Reset}"
-Write-Host "${White}${Grey} ██╔══██╗██╔══██╗██║██╔════╝╚██╗ ██╔╝ ${Reset}"
-Write-Host "${White}${Grey} ██║  ██║███████║██║███████╗ ╚████╔╝  ${Reset}"
-Write-Host "${White}${Grey} ██║  ██║██╔══██║██║╚════██║  ╚██╔╝   ${Reset}"
-Write-Host "${White}${Grey} ██████╔╝██║  ██║██║███████║   ██║    ${Reset}"
-Write-Host " ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝   ╚═╝    ${Reset}"
-Write-Host ""
-
-Write-Host "${Grey}   Tools Downloader from Daisy  •  v1.0${Reset}"
-Write-Host "${White}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${Reset}"
-Write-Host ""
-
-}
-
-# ── Main ──────────────────────────────────────────────────────────────────────
-Show-Banner
-
-$ssFolder   = Get-NextSSFolder
-$totalTools = ($Groups.Values | ForEach-Object { $_.Count } | Measure-Object -Sum).Sum
-
-Write-Host "  ${White}Output folder  ${Gray}$ssFolder${Reset}"
-Write-Host "  ${Gray}Total tools    ${White}$totalTools${Reset} ${Gray}across $($Groups.Count) groups${Reset}"
-Write-Host ""
-
-# ── Download mode prompt ──────────────────────────────────────────────────────
-Write-Host "  ${White}Download mode:${Reset}"
-Write-Host ""
-Write-Host "    ${Grey}[A]${Gray}  All tools ${Gray}($totalTools files)${Reset}"
-Write-Host "    ${Grey}[C]${Gray}  Choose specific groups${Reset}"
-Write-Host ""
-$mode = (Read-Host "  >").Trim().ToUpper()
-
-[string[]]$selectedNames = @()
-
-if ($mode -eq 'A') {
-    $selectedNames = @($Groups.Keys)
-} elseif ($mode -eq 'C') {
-    Write-Host ""
-    $groupKeys = @($Groups.Keys)
-    Write-Host "  ${White}Available groups:${Reset}"
-    Write-Host ""
-    for ($i = 0; $i -lt $groupKeys.Count; $i++) {
-        $cnt = $Groups[$groupKeys[$i]].Count
-        Write-Host "    ${Gray}[$($i + 1)]${Gray} $($groupKeys[$i]) ${Gray}($cnt tools)${Reset}"
+    function Read-Answer([string]$Prompt) {
+        Write-Host -NoNewline "   $Pink>$R $White$Prompt$R "
+        $a = [Console]::ReadLine()
+        if ($null -eq $a) { return '' }
+        return $a.Trim()
     }
-    Write-Host ""
-    Write-Host "  ${White}Enter group numbers separated by commas ${Gray}(e.g. 1,3,5)${Grey}:${Reset}"
-    $raw = (Read-Host "  >").Trim()
 
-    foreach ($part in ($raw -split ',')) {
-        $part = $part.Trim()
-        if ($part -match '^\d+$') {
-            $idx = [int]$part - 1
-            if ($idx -ge 0 -and $idx -lt $groupKeys.Count) {
-                $selectedNames += $groupKeys[$idx]
+    # -- Menu -----------------------------------------------------------------
+    Show-Banner
+
+    $i = 1
+    while (Test-Path "C:\SS$i") { $i++ }
+    $ssFolder = "C:\SS$i"
+
+    $groupNames = @($Groups.Keys)
+    $totalTools = 0
+    foreach ($g in $groupNames) { $totalTools += $Groups[$g].Count }
+
+    Write-Host "   ${Dim}Output folder$R   $White$ssFolder$R"
+    Write-Host "   ${Dim}Tools$R           $White$totalTools$R ${Dim}in $($groupNames.Count) groups$R"
+    Write-Host ''
+    for ($g = 0; $g -lt $groupNames.Count; $g++) {
+        $num = "[$($g + 1)]".PadRight(5)
+        Write-Host ("   $Pink$num$R $White{0}$R $Dim({1})$R" -f $groupNames[$g].PadRight(16), $Groups[$groupNames[$g]].Count)
+    }
+    Write-Host ''
+    Write-Host "   ${Dim}Press Enter to download everything, or type group numbers (e.g. 1,3,5).$R"
+    $raw = Read-Answer 'Choice:'
+
+    $selected = New-Object System.Collections.Generic.List[string]
+    if ($raw -eq '' -or $raw -match '^(a|all)$') {
+        foreach ($g in $groupNames) { $selected.Add($g) }
+    } else {
+        foreach ($part in ($raw -split '[,\s]+')) {
+            if ($part -match '^\d+$') {
+                $idx = [int]$part - 1
+                if ($idx -ge 0 -and $idx -lt $groupNames.Count -and -not $selected.Contains($groupNames[$idx])) {
+                    $selected.Add($groupNames[$idx])
+                }
             }
         }
     }
 
-    if ($selectedNames.Count -eq 0) {
-        Write-Host ""
-        Write-Host "  ${Red}No valid groups selected. Exiting.${Reset}"
-        exit 0
+    if ($selected.Count -eq 0) {
+        Write-Host ''
+        Write-Host "   ${Red}No valid groups selected.$R"
+        [void](Read-Answer 'Press Enter to close')
+        return
     }
-} else {
-    Write-Host ""
-    Write-Host "  ${Red}Invalid choice. Exiting.${Reset}"
-    exit 0
-}
 
-# ── Confirmation ──────────────────────────────────────────────────────────────
-Write-Host ""
-Write-Host "  ${White}Selected groups:${Reset}"
-Write-Host ""
-$totalSelected = 0
-foreach ($name in $selectedNames) {
-    $cnt = $Groups[$name].Count
-    $totalSelected += $cnt
-    Write-Host "    ${Grey}• $name ${Gray}($cnt tools)${Reset}"
-}
-Write-Host ""
-Write-Host "  ${White}Files to download: ${Orange}$totalSelected${Reset}"
-Write-Host ""
-$confirm = (Read-Host "  ${Grey}Proceed? [Y/N]  >${Reset}").Trim().ToUpper()
-if ($confirm -ne 'Y') {
-    Write-Host ""
-    Write-Host "  ${Red}Aborted.${Reset}"
-    exit 0
-}
+    $toDownload = 0
+    foreach ($g in $selected) { $toDownload += $Groups[$g].Count }
 
-# ── Setup output folder + AV exclusion ───────────────────────────────────────
-Write-Host ""
-Write-Host "  ${White}Creating ${Grey}$ssFolder${Orange}...${Reset}" -NoNewline
-$null = New-Item -ItemType Directory -Path $ssFolder -Force
-Write-Host " ${Green}✓${Reset}"
-
-Write-Host "  ${White}Adding Windows Defender exclusion...${Reset}" -NoNewline
-if (-not (Get-Command -Name 'Add-MpPreference' -ErrorAction SilentlyContinue)) {
-    Write-Host " ${Gray}skipped (Defender not present)${Reset}"
-} else {
-    try {
-        Add-MpPreference -ExclusionPath $ssFolder -ErrorAction Stop
-        Write-Host " ${Green}✓${Reset}"
-    } catch {
-        Write-Host " ${Red}✗ (non-fatal — $_)${Reset}"
+    Write-Host ''
+    Write-Host "   ${Dim}Selected:$R $White$($selected -join ', ')$R ${Dim}($toDownload tools)$R"
+    $confirm = Read-Answer 'Start download? [Y/n]'
+    if ($confirm -match '^(n|no)$') {
+        Write-Host "   ${Red}Aborted.$R"
+        return
     }
+
+    # -- Prepare folder + Defender exclusion ----------------------------------
+    Write-Host ''
+    $null = New-Item -ItemType Directory -Path $ssFolder -Force
+    Write-Host "   ${Green}OK$R  ${Dim}Created$R $White$ssFolder$R"
+
+    if (Get-Command -Name 'Add-MpPreference' -ErrorAction SilentlyContinue) {
+        try {
+            Add-MpPreference -ExclusionPath $ssFolder -ErrorAction Stop
+            Write-Host "   ${Green}OK$R  ${Dim}Defender exclusion added for$R $White$ssFolder$R"
+        } catch {
+            Write-Host "   ${Yellow}!!$R  ${Dim}Could not add Defender exclusion (tools may get quarantined)$R"
+        }
+    } else {
+        Write-Host "   ${Dim}--  Defender not present, exclusion skipped$R"
+    }
+
+    # -- Download -------------------------------------------------------------
+    $ok = 0; $warn = 0
+    $failed = New-Object System.Collections.Generic.List[string]
+    $counter = 0
+    $w = "$toDownload".Length
+    $timer = [Diagnostics.Stopwatch]::StartNew()
+
+    foreach ($groupName in $selected) {
+        $groupDir = Join-Path $ssFolder $groupName
+        $null = New-Item -ItemType Directory -Path $groupDir -Force
+
+        Write-Host ''
+        Write-Host "   $Pink$B$groupName$R"
+        foreach ($url in $Groups[$groupName]) {
+            $counter++
+            $prefix = "   $Dim$("$counter".PadLeft($w))/$toDownload$R  "
+            switch (Invoke-ToolDownload $url $groupDir $prefix) {
+                'ok'   { $ok++ }
+                'warn' { $warn++ }
+                default { $failed.Add("[$groupName] $url") }
+            }
+        }
+    }
+    $timer.Stop()
+    $client.Dispose()
+
+    # -- Summary --------------------------------------------------------------
+    Write-Host ''
+    Write-Host "   $Dim$Line$R"
+    Write-Host ("   ${Green}Downloaded$R  $White{0} / {1}$R  ${Dim}in {2:N0}s$R" -f ($ok + $warn), $toDownload, $timer.Elapsed.TotalSeconds)
+    if ($warn -gt 0) { Write-Host "   ${Yellow}Zip issues$R  $White$warn$R ${Dim}(saved as .zip, extract manually)$R" }
+    if ($failed.Count -gt 0) {
+        Write-Host "   ${Red}Failed$R      $White$($failed.Count)$R"
+        foreach ($f in $failed) { Write-Host "     $Dim$f$R" }
+    }
+    Write-Host "   $Dim$Line$R"
+    Write-Host "   ${Dim}Saved to$R $White$ssFolder$R"
+    Write-Host ''
+
+    try { Start-Process explorer.exe -ArgumentList "`"$ssFolder`"" } catch {}
+    [void](Read-Answer 'Press Enter to close')
 }
 
-# ── Download ──────────────────────────────────────────────────────────────────
-$failed = [System.Collections.Generic.List[string]]::new()
-
-foreach ($groupName in $selectedNames) {
-    $urls     = $Groups[$groupName]
-    $groupDir = Join-Path $ssFolder $groupName
-    $null = New-Item -ItemType Directory -Path $groupDir -Force
-
-    Write-Host ""
-    Write-Host "  ${White}━━━ $groupName ${Gray}($($urls.Count) tools)${Reset}"
-    Write-Host ""
-
-    foreach ($url in $urls) {
-        Invoke-FileDownload -Url $url -GroupFolder $groupDir -FailedList $failed
-    }
-}
-
-# ── Rename ToolsDownloader++ ───────────────────────────────────────────────────
-$toolsDownloader = Get-ChildItem -Path $ssFolder `
-    -Recurse `
-    -File `
-    -ErrorAction SilentlyContinue |
-    Where-Object {
-        $_.BaseName -eq 'ToolsDownloader++' -and
-        $_.Extension -eq ''
-    } |
-    Select-Object -First 1
-
-if ($toolsDownloader) {
-    $newName = 'ToolsDownloader++.exe'
-
-    try {
-        Rename-Item `
-            -LiteralPath $toolsDownloader.FullName `
-            -NewName $newName `
-            -Force `
-            -ErrorAction Stop
-
-        Write-Host "  ${Green}✓ Renamed ToolsDownloader++ -> ToolsDownloader++.exe${Reset}"
-    }
-    catch {
-        Write-Host "  ${Red}✗ Failed to rename ToolsDownloader++: $($_.Exception.Message)${Reset}"
-    }
-}
-
-# ── Summary ───────────────────────────────────────────────────────────────────
-$succeeded = $totalSelected - $failed.Count
-
-Write-Host ""
-Write-Host "  ${White}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${Reset}"
-Write-Host "  ${Green}✓ Downloaded : $succeeded / $totalSelected${Reset}"
-
-if ($failed.Count -gt 0) {
-    Write-Host "  ${Red}✗ Failed     : $($failed.Count)${Reset}"
-    Write-Host ""
-    Write-Host "  ${Red}Failed URLs:${Reset}"
-
-    foreach ($f in $failed) {
-        Write-Host "    ${Gray}$f${Reset}"
-    }
-}
-
-Write-Host ""
-Write-Host "  ${White}Tools saved to ${Grey}$ssFolder${Reset}"
-Write-Host "  ${Grey}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${Reset}"
-Write-Host ""
+Start-SSDownloader
